@@ -53,6 +53,7 @@ jobs:
           candidate: run.json
           max-divergence: "0.3"
           max-loops: "0"
+          max-cost-delta: "100.0"
 
   block:
     name: Redundant loop -> gate blocks
@@ -96,7 +97,7 @@ jobs:
         run: |
           pip install google-genai agent-trajectory-diff
           python scripts/run_agent.py \
-            --prompt "${{ github.event.inputs.prompt }}" \
+            --prompt "${{ github.event.inputs.prompt || 'Retrieve the database count of active users for state NY.' }}" \
             --out run.json
 
       - name: Gate + post PR-ready comment
@@ -106,6 +107,10 @@ jobs:
           candidate: run.json
           max-divergence: "0.3"
           max-loops: "0"
-          pr: ${{ github.event.inputs.pr }}
+          max-cost-delta: "100.0"
+          # Real-life: post to the PR that triggered this run automatically.
+          # github.event.pull_request.number is set on pull_request events;
+          # github.event.inputs.pr allows a manual workflow_dispatch override.
+          pr: ${{ github.event.pull_request.number || github.event.inputs.pr }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
