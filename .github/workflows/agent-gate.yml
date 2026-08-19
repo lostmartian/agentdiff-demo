@@ -32,7 +32,7 @@ jobs:
             --out run.json
 
       - name: Gate against baseline
-        uses: lostmartian/agentdiff/.github/actions/agentdiff-check@v0.2.1
+        uses: lostmartian/agentdiff/.github/actions/agentdiff-check@v0.2.2
         with:
           baseline: traces/gemini_baseline.json
           candidate: run.json
@@ -58,7 +58,7 @@ jobs:
             --out run.json
 
       - name: Gate against baseline (expect BLOCKED)
-        uses: lostmartian/agentdiff/.github/actions/agentdiff-check@v0.2.1
+        uses: lostmartian/agentdiff/.github/actions/agentdiff-check@v0.2.2
         with:
           baseline: traces/gemini_baseline.json
           candidate: run.json
