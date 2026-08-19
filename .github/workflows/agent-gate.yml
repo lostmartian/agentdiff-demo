@@ -28,7 +28,7 @@ jobs:
         run: |
           pip install google-genai agent-trajectory-diff
           python scripts/run_agent.py \
-            --prompt "Retrieve the database count of active users for state NY." \
+            --prompt "Query user stats for NY. Call get_user_database_stats twice to confirm the numbers are consistent." \
             --out run.json
 
       - name: Gate against baseline
