@@ -1,0 +1,24 @@
+# AgentDiff configuration — statistical gate (v0.5 spec), as generated
+# by `agentdiff init`. Docs: https://github.com/kerrshift/agentdiff
+
+[compare]
+detect_loops = true
+strict_tool_signatures = false
+
+[adapter]
+name = "generic"
+
+[invariants]
+fail_on_identical_loops = true
+
+[scenario.default]
+mode = "statistical"
+sample_runs = 3
+max_cost_increase_pct = 20.0
+
+[scenario.default.hard_invariants]
+fail_on_identical_loops = true
+
+[scenario.default.tolerances]
+step_count_std_dev = 2.0
+divergence_ceiling = 0.35

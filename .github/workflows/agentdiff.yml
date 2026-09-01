@@ -1,0 +1,84 @@
+# AgentDiff CI gate — the live statistical gate of this demo.
+# Every PR records a fresh candidate trace from the REAL Gemini agent and
+# gates it against the committed N-run baseline envelope. The candidate
+# artifact is picked up by the /agentdiff approve bot for re-baselining.
+#
+# NOTE: installs AgentDiff from main until v0.5.0 is tagged; then switch to
+#   pip install agent-trajectory-diff
+# (or pin the version) for reproducible builds.
+
+name: AgentDiff Check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Agent prompt (use the redundant-call prompt to demo a BLOCKED gate)"
+        default: ""
+      pr:
+        description: "PR number to post the report to (dispatch only)"
+        default: ""
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  agentdiff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install AgentDiff + agent deps
+        run: pip install "agent-trajectory-diff @ git+https://github.com/kerrshift/agentdiff.git" google-genai
+
+      - name: Check for baseline envelope
+        id: base
+        run: |
+          if [ -f baselines/default.envelope.json ]; then
+            echo "has_baseline=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_baseline=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No baseline envelope yet — run 'Record Baseline' (Actions tab) once to bootstrap."
+          fi
+
+      - name: Run live agent (real Gemini)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PROMPT: ${{ inputs.prompt }}
+        run: |
+          if [ -z "$PROMPT" ]; then
+            PROMPT="Retrieve the database count of active users for state NY."
+          fi
+          python scripts/run_agent.py --prompt "$PROMPT" --out traces/candidate.json
+
+      - name: Upload candidate trace (for /agentdiff approve)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentdiff-candidate-trace
+          path: traces/candidate.json
+          retention-days: 7
+
+      - name: Gate against baseline envelope
+        if: steps.base.outputs.has_baseline == 'true'
+        run: agentdiff diff baselines/default.envelope.json traces/candidate.json --scenario default --fail-on-regression
+
+      - name: Post PR report
+        if: always() && steps.base.outputs.has_baseline == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUM: ${{ github.event.number || inputs.pr }}
+        run: |
+          if [ -z "$PR_NUM" ]; then
+            echo "No PR context — skipping report comment."
+            exit 0
+          fi
+          agentdiff diff baselines/default.envelope.json traces/candidate.json --scenario default --format pr --pr "$PR_NUM"
