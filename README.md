@@ -21,7 +21,9 @@ re-baselines on `/agentdiff approve` as **agentdiff-ci[bot]**.
 3. **The approve bot** — comment `/agentdiff approve` on a flagged PR and the
    bot re-records the golden baseline, commits it to the PR branch, and posts
    a green `AgentDiff Check` — as `agentdiff-ci[bot]` via the hosted identity
-   service (`token.agentdiff.app`). Zero secrets, zero variables.
+   service (`token.agentdiff.app`). Zero secrets, zero variables. The PR
+   report from the gate itself gets the same branded identity whenever the
+   App is installed.
 4. **Config-as-code** — all thresholds live in `agentdiff.toml`
    (`[scenario.default]`, tolerances, invariants), exactly what
    `agentdiff init` generates.
