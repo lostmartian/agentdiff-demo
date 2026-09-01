@@ -29,9 +29,10 @@ concurrency:
 jobs:
   approve:
     if: >-
-      ${{ github.event.issue.pull_request != null }}
+      github.event.issue.pull_request != null
       && startsWith(github.event.comment.body, '/agentdiff approve')
       && github.event.comment.user.type != 'Bot'
+      && !endsWith(github.event.comment.user.login, '[bot]')
     runs-on: ubuntu-latest
     steps:
       - name: Verify commenter has write access
