@@ -7,8 +7,7 @@
 # (token.agentdiff.app) mints a short-lived App token so the bot comments and
 # commits as agentdiff-ci[bot] — no secrets, no variables.
 #
-# NOTE: installs AgentDiff from main until v0.5.0 is tagged; then switch to
-#   pip install agent-trajectory-diff
+# Workflows pin the published PyPI package (0.5.0).
 
 name: AgentDiff Approve
 
@@ -125,7 +124,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install AgentDiff
-        run: pip install "agent-trajectory-diff @ git+https://github.com/kerrshift/agentdiff.git"
+        run: pip install agent-trajectory-diff
 
       - name: Re-baseline from the candidate run
         env:

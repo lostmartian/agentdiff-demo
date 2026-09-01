@@ -3,8 +3,7 @@
 # gates it against the committed N-run baseline envelope. The candidate
 # artifact is picked up by the /agentdiff approve bot for re-baselining.
 #
-# NOTE: installs AgentDiff from main until v0.5.0 is tagged; then switch to
-#   pip install agent-trajectory-diff
+# Workflows pin the published PyPI package (0.5.0).
 # (or pin the version) for reproducible builds.
 
 name: AgentDiff Check
@@ -37,7 +36,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install AgentDiff + agent deps
-        run: pip install "agent-trajectory-diff @ git+https://github.com/kerrshift/agentdiff.git" google-genai
+        run: pip install agent-trajectory-diff google-genai
 
       - name: Check for baseline envelope
         id: base

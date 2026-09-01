@@ -53,11 +53,6 @@ the verdict (human-first summary, gate details collapsed).
    automatically. Without it everything still works as
    `github-actions[bot]`.
 
-> **Version note:** workflows currently install AgentDiff from `main`
-> (`git+https://github.com/kerrshift/agentdiff.git`) because the statistical
-> gate and approve bot ship with 0.5.0. After the `v0.5.0` tag, switch the
-> three workflows to `pip install agent-trajectory-diff`.
-
 ## 4. Run it
 
 ```bash

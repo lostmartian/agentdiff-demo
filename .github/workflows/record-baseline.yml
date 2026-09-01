@@ -25,7 +25,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install AgentDiff + agent deps
-        run: pip install "agent-trajectory-diff @ git+https://github.com/kerrshift/agentdiff.git" google-genai
+        run: pip install agent-trajectory-diff google-genai
 
       - name: Record N live runs into a statistical envelope
         env:
