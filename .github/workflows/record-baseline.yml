@@ -1,0 +1,41 @@
+# One-time bootstrap (and re-record after a deliberate behavior change):
+# records N live runs of the real agent into a statistical baseline envelope
+# and commits it. GITHUB_TOKEN pushes do not re-trigger CI.
+
+name: Record Baseline
+
+on:
+  workflow_dispatch:
+    inputs:
+      runs:
+        description: "Number of live runs to record"
+        default: "3"
+
+permissions:
+  contents: write
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install AgentDiff + agent deps
+        run: pip install "agent-trajectory-diff @ git+https://github.com/kerrshift/agentdiff.git" google-genai
+
+      - name: Record N live runs into a statistical envelope
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python scripts/make_envelope.py --runs ${{ github.event.inputs.runs || '3' }}
+
+      - name: Commit the envelope
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add baselines/default.envelope.json
+          git commit -m "chore(baseline): record statistical envelope (${{ github.event.inputs.runs || '3' }} runs)"
+          git push

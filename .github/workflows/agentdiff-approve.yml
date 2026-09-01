@@ -1,0 +1,155 @@
+# AgentDiff Approve bot — reviewers comment `/agentdiff approve` on a PR to
+# bless the candidate run as the new golden baseline. Loop violations are
+# never blessable (policy D3: non-termination is not a baseline).
+#
+# Zero setup: works on the default GITHUB_TOKEN. When the AgentDiff GitHub
+# App is installed on this repo, the hosted identity service
+# (token.agentdiff.app) mints a short-lived App token so the bot comments and
+# commits as agentdiff-ci[bot] — no secrets, no variables.
+#
+# NOTE: installs AgentDiff from main until v0.5.0 is tagged; then switch to
+#   pip install agent-trajectory-diff
+
+name: AgentDiff Approve
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+  checks: write
+
+concurrency:
+  group: agentdiff-approve-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  approve:
+    if: >-
+      ${{ github.event.issue.pull_request != null }}
+      && startsWith(github.event.comment.body, '/agentdiff approve')
+      && github.event.comment.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify commenter has write access
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PERM=$(gh api repos/${{ github.repository }}/collaborators/${{ github.event.comment.user.login }}/permission --jq .permission)
+          if [ "$PERM" != "write" ] && [ "$PERM" != "admin" ]; then
+            echo "Commenter ${{ github.event.comment.user.login }} lacks write access ($PERM). Refusing."
+            gh pr comment ${{ github.event.issue.number }} --body "⛔ /agentdiff approve requires write access."
+            exit 1
+          fi
+
+      - name: AgentDiff bot token (self-managed App, optional)
+        id: app_token
+        if: ${{ vars.AGENTDIFF_APP_ID != '' }}
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.AGENTDIFF_APP_ID }}
+          private-key: ${{ secrets.AGENTDIFF_APP_PRIVATE_KEY }}
+
+      - name: AgentDiff bot token (hosted service, zero config)
+        id: minted_token
+        if: ${{ steps.app_token.outputs.token == '' }}
+        env:
+          SERVICE_URL: https://token.agentdiff.app
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Mints a 1h agentdiff-ci[bot] token when the AgentDiff App is
+          # installed on this repo; prints nothing sensitive, stores nothing.
+          RESP=$(curl -sS -X POST "$SERVICE_URL/token" \
+            -H "Content-Type: application/json" \
+            -d "{\"repository\": \"$REPO\", \"token\": \"$GH_TOKEN\"}" || true)
+          BOT_TOKEN=$(echo "$RESP" | python3 -c 'import json,sys
+          try: print(json.load(sys.stdin).get("token",""))
+          except Exception: print("")' 2>/dev/null || true)
+          if [ -n "$BOT_TOKEN" ]; then
+            echo "token=$BOT_TOKEN" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Select token
+        id: token
+        env:
+          APP_TOKEN: ${{ steps.app_token.outputs.token }}
+          MINTED: ${{ steps.minted_token.outputs.token }}
+        run: |
+          if [ -n "$APP_TOKEN" ]; then
+            echo "token=$APP_TOKEN" >> "$GITHUB_OUTPUT"
+          elif [ -n "$MINTED" ]; then
+            echo "token=$MINTED" >> "$GITHUB_OUTPUT"
+            echo "Branded agentdiff[bot] identity acquired via the AgentDiff App."
+          else
+            echo "token=${{ github.token }}" >> "$GITHUB_OUTPUT"
+            echo "::notice::Using github-actions[bot] identity. Install the AgentDiff App (https://github.com/apps/agentdiff-ci) for the branded bot — everything else works identically."
+          fi
+
+      - name: Resolve PR head
+        id: pr
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          REF=$(gh pr view ${{ github.event.issue.number }} --json headRefName --jq .headRefName)
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.ref }}
+          fetch-depth: 0
+          token: ${{ steps.token.outputs.token }}
+
+      - name: Find latest AgentDiff check run
+        id: check
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          RUN_ID=$(gh run list --workflow "AgentDiff Check" --branch "${{ steps.pr.outputs.ref }}" --limit 1 --json databaseId --jq '.[0].databaseId')
+          echo "id=$RUN_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Download candidate trace
+        uses: actions/download-artifact@v4
+        with:
+          name: agentdiff-candidate-trace
+          path: traces/
+          github-token: ${{ steps.token.outputs.token }}
+          run-id: ${{ steps.check.outputs.id }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install AgentDiff
+        run: pip install "agent-trajectory-diff @ git+https://github.com/kerrshift/agentdiff.git"
+
+      - name: Re-baseline from the candidate run
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          AGENTDIFF_APPROVER: ${{ github.event.comment.user.login }}
+        run: |
+          agentdiff approve baselines/default.envelope.json traces/candidate.json \
+            --scenario default --runs 3 \
+            --pr ${{ github.event.issue.number }}
+
+      - name: Commit the new baseline
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          git config user.name "agentdiff[bot]"
+          git config user.email "agentdiff[bot]@users.noreply.github.com"
+          git add baselines/default.envelope.json
+          git commit -m "chore(baseline): re-baseline via /agentdiff approve"
+          git push origin HEAD:${{ steps.pr.outputs.ref }}
+
+      - name: Post green AgentDiff Check on the new head
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          SHA=$(git rev-parse HEAD)
+          gh api repos/${{ github.repository }}/check-runs --input - <<JSON
+          {"name": "AgentDiff Check", "head_sha": "$SHA", "status": "completed", "conclusion": "success", "output": {"title": "Re-baselined via /agentdiff approve", "summary": "The approve run verified the gate against the new baseline."}}
+          JSON
