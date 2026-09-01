@@ -71,10 +71,31 @@ jobs:
         if: steps.base.outputs.has_baseline == 'true'
         run: agentdiff diff baselines/default.envelope.json traces/candidate.json --scenario default --fail-on-regression
 
+      - name: AgentDiff bot token (hosted service, optional)
+        id: bot_token
+        if: always()
+        env:
+          SERVICE_URL: https://token.agentdiff.app
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Branded agentdiff-ci[bot] identity when the AgentDiff App is
+          # installed on this repo; silently falls back to GITHUB_TOKEN
+          # otherwise. Stateless mint, 1h expiry, nothing stored.
+          RESP=$(curl -sS -X POST "$SERVICE_URL/token" \
+            -H "Content-Type: application/json" \
+            -d "{\"repository\": \"$REPO\", \"token\": \"$GH_TOKEN\"}" || true)
+          BOT_TOKEN=$(echo "$RESP" | python3 -c 'import json,sys
+          try: print(json.load(sys.stdin).get("token",""))
+          except Exception: print("")' 2>/dev/null || true)
+          if [ -n "$BOT_TOKEN" ]; then
+            echo "token=$BOT_TOKEN" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Post PR report
         if: always() && steps.base.outputs.has_baseline == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.bot_token.outputs.token || secrets.GITHUB_TOKEN }}
           PR_NUM: ${{ github.event.number || inputs.pr }}
         run: |
           if [ -z "$PR_NUM" ]; then
