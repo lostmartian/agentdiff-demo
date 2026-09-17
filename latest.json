@@ -1,0 +1,98 @@
+{
+  "baseline": {
+    "bands": {
+      "estimated_cost_usd": {
+        "mean": 0.0022,
+        "std_dev": 0.0002
+      },
+      "latency_ms": {
+        "mean": 0.0,
+        "std_dev": 0.0
+      },
+      "step_count": {
+        "mean": 5.0,
+        "std_dev": 0.0
+      },
+      "tool:gemini_synthesis": {
+        "mean": 1.0,
+        "std_dev": 0.0
+      },
+      "tool:gemini_tool_decision": {
+        "mean": 1.0,
+        "std_dev": 0.0
+      },
+      "tool:get_user_database_stats": {
+        "mean": 3.0,
+        "std_dev": 0.0
+      },
+      "total_tokens": {
+        "mean": 725.6667,
+        "std_dev": 55.5818
+      }
+    },
+    "mode": "statistical",
+    "n_runs": 3,
+    "recorded_at": "2026-09-17T07:35:19.700103+00:00",
+    "schema_version": "2.0.0"
+  },
+  "candidate": {
+    "agent_name": "gemini_support_agent",
+    "estimated_cost_usd": 0.002151,
+    "latency_ms": 0.0,
+    "steps": 5,
+    "total_tokens": 717,
+    "trace_id": "run"
+  },
+  "context": {
+    "actor": "lostmartian",
+    "commit": "f13a842f5406",
+    "event": "push",
+    "repository": "lostmartian/agentdiff-demo",
+    "run_id": "35195407373",
+    "run_url": "https://github.com/lostmartian/agentdiff-demo/actions/runs/35195407373",
+    "workflow": "AgentDiff Check"
+  },
+  "findings": [
+    {
+      "code": "loops",
+      "message": "Detected 1 loop(s) in the candidate run, but the loop gate allows at most 0.",
+      "severity": "hard"
+    }
+  ],
+  "gate_exit_code": 1,
+  "generated_at": "2026-09-17T07:37:11+00:00",
+  "kind": "agentdiff_gate_status",
+  "metrics": {
+    "cost_delta_pct": -9.13,
+    "identical_call_loops": 0,
+    "latency_delta_pct": 0.0,
+    "loops_detected": 1,
+    "recovery_step_ratio": 0.0,
+    "token_delta_pct": -9.13,
+    "tool_call_counts": {
+      "gemini_synthesis": 1,
+      "gemini_tool_decision": 1,
+      "get_user_database_stats": 3
+    },
+    "trajectory_divergence_index": 0.0,
+    "wasted_effort": {
+      "baseline": 0.0,
+      "candidate": 0.0
+    }
+  },
+  "provenance": "Gate [statistical envelope: default, N=3]: divergence_ceiling=0.35, max_cost_increase_pct=20.0%, step_count_std_dev=2.0, fail_on_identical_loops=true — source: agentdiff.toml (agentdiff.toml)",
+  "scenario": "default",
+  "schema_version": "1.0.0",
+  "thresholds": {
+    "divergence_ceiling": 0.35,
+    "fail_on_identical_loops": true,
+    "max_cost_increase_pct": 20.0,
+    "max_tool_repeats": null,
+    "step_count_std_dev": 2.0
+  },
+  "verdict": {
+    "headline": "Blocked by: loops",
+    "passed": false,
+    "status": "BLOCKED"
+  }
+}

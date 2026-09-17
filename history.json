@@ -1,0 +1,19 @@
+{
+  "kind": "agentdiff_gate_history",
+  "runs": [
+    {
+      "at": "2026-09-17T07:37:11+00:00",
+      "cost_delta_pct": -9.13,
+      "loops": 1,
+      "passed": false,
+      "run_url": "https://github.com/lostmartian/agentdiff-demo/actions/runs/35195407373",
+      "status": "BLOCKED",
+      "steps": 5,
+      "tdi": 0.0,
+      "token_delta_pct": -9.13,
+      "tokens": 717
+    }
+  ],
+  "schema_version": "1.0.0",
+  "updated_at": "2026-09-17T07:37:11+00:00"
+}
