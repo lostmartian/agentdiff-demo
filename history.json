@@ -36,8 +36,20 @@
       "tdi": 0.0,
       "token_delta_pct": -11.53,
       "tokens": 698
+    },
+    {
+      "at": "2026-09-17T07:50:50+00:00",
+      "cost_delta_pct": -34.09,
+      "loops": 1,
+      "passed": false,
+      "run_url": "https://github.com/lostmartian/agentdiff-demo/actions/runs/35196539042",
+      "status": "BLOCKED",
+      "steps": 4,
+      "tdi": 0.1111,
+      "token_delta_pct": -34.09,
+      "tokens": 520
     }
   ],
   "schema_version": "1.0.0",
-  "updated_at": "2026-09-17T07:49:01+00:00"
+  "updated_at": "2026-09-17T07:50:50+00:00"
 }
