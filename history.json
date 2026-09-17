@@ -73,8 +73,23 @@
       "tdi": 0.0,
       "token_delta_pct": 1.14,
       "tokens": 798
+    },
+    {
+      "at": "2026-09-17T08:02:07+00:00",
+      "codes": [],
+      "cost_delta_pct": -5.58,
+      "engine": "0.5.1",
+      "headline": "No loops. Cost within band. Trajectory within budget.",
+      "loops": 0,
+      "passed": true,
+      "run_url": "https://github.com/lostmartian/agentdiff-demo/actions/runs/35197491112",
+      "status": "PASSED",
+      "steps": 5,
+      "tdi": 0.0,
+      "token_delta_pct": -5.58,
+      "tokens": 745
     }
   ],
   "schema_version": "1.0.0",
-  "updated_at": "2026-09-17T07:55:05+00:00"
+  "updated_at": "2026-09-17T08:02:07+00:00"
 }
