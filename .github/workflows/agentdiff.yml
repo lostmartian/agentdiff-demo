@@ -22,7 +22,7 @@ on:
         default: ""
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 jobs:
@@ -69,6 +69,52 @@ jobs:
       - name: Gate against baseline envelope
         if: steps.base.outputs.has_baseline == 'true'
         run: agentdiff diff baselines/default.envelope.json traces/candidate.json --scenario default --fail-on-regression
+
+      - name: Publish gate status (always)
+        if: always()
+        run: |
+          python scripts/publish_status.py \
+            --baseline baselines/default.envelope.json \
+            --candidate traces/candidate.json \
+            --config agentdiff.toml --scenario default \
+            --out-dir status --history-limit 60
+
+      - name: Push status to the status branch
+        if: always() && github.event_name != 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          STATUS_DIR="$GITHUB_WORKSPACE/status"
+          export GIT_TERMINAL_PROMPT=0
+          WORK="$(mktemp -d)"
+          cd "$WORK"
+          git init -q
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git fetch -q --depth=1 origin status 2>/dev/null; then
+            git checkout -q -B status FETCH_HEAD
+          else
+            git checkout -q --orphan status
+          fi
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp "$STATUS_DIR"/latest.json "$STATUS_DIR"/history.json .
+          git config user.name "agentdiff-ci[bot]"
+          git config user.email "agentdiff-ci[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "status unchanged, nothing to publish"
+            exit 0
+          fi
+          git commit -q -m "status: gate run ${GITHUB_RUN_ID:-local} [skip ci]"
+          for attempt in 1 2 3; do
+            if git push -q origin status; then
+              echo "status branch updated"
+              exit 0
+            fi
+            git fetch -q --depth=1 origin status && git rebase -q FETCH_HEAD || true
+            sleep 3
+          done
+          echo "::warning::status push failed after retries (non-blocking)"
 
       - name: Post PR report
         if: always() && steps.base.outputs.has_baseline == 'true'
