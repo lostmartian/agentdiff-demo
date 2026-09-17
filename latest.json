@@ -37,32 +37,32 @@
   },
   "candidate": {
     "agent_name": "gemini_support_agent",
-    "estimated_cost_usd": 0.002055,
+    "estimated_cost_usd": 0.002394,
     "latency_ms": 0.0,
     "steps": 5,
-    "total_tokens": 685,
+    "total_tokens": 798,
     "trace_id": "run"
   },
   "context": {
     "actor": "lostmartian",
-    "commit": "f13a842f5406",
-    "event": "workflow_dispatch",
+    "commit": "87857be1164b",
+    "event": "push",
     "repository": "lostmartian/agentdiff-demo",
-    "run_id": "35196684768",
-    "run_url": "https://github.com/lostmartian/agentdiff-demo/actions/runs/35196684768",
+    "run_id": "35196911073",
+    "run_url": "https://github.com/lostmartian/agentdiff-demo/actions/runs/35196911073",
     "workflow": "AgentDiff Check"
   },
   "findings": [],
   "gate_exit_code": 0,
-  "generated_at": "2026-09-17T07:52:22+00:00",
+  "generated_at": "2026-09-17T07:55:05+00:00",
   "kind": "agentdiff_gate_status",
   "metrics": {
-    "cost_delta_pct": -13.18,
+    "cost_delta_pct": 1.14,
     "identical_call_loops": 0,
     "latency_delta_pct": 0.0,
     "loops_detected": 0,
     "recovery_step_ratio": 0.0,
-    "token_delta_pct": -13.18,
+    "token_delta_pct": 1.14,
     "tool_call_counts": {
       "gemini_synthesis": 1,
       "gemini_tool_decision": 1,
@@ -74,6 +74,7 @@
       "candidate": 0.0
     }
   },
+  "package_version": "0.5.1",
   "provenance": "Gate [statistical envelope: default, N=3]: divergence_ceiling=0.35, max_cost_increase_pct=20.0%, step_count_std_dev=2.0, fail_on_identical_loops=true — source: agentdiff.toml (agentdiff.toml)",
   "scenario": "default",
   "schema_version": "1.0.0",
