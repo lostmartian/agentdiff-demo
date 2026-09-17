@@ -93,3 +93,23 @@ The v1-era demo (single static baseline, `agentdiff-check` action pinned to
 0.2.x) lives in the history of PRs #1–#3 and `traces/gemini_baseline.json`.
 This branch is the 0.5.0 story: statistical envelopes, honest gates, and the
 approve bot.
+
+---
+
+## Live gate status
+
+Every run of the `AgentDiff Check` workflow publishes a machine-readable verdict:
+
+- `status/latest.json` — full status on the `status` branch: verdict, metrics,
+  envelope bands, findings, thresholds in force, provenance line, run link
+- `status/history.json` — rolling history of the last 60 gated runs
+
+Both are produced by `scripts/publish_status.py` using the AgentDiff library API
+in-process, and pushed to the orphan `status` branch by CI (never to `main`).
+
+Raw endpoints:
+
+```
+https://raw.githubusercontent.com/lostmartian/agentdiff-demo/status/latest.json
+https://raw.githubusercontent.com/lostmartian/agentdiff-demo/status/history.json
+```
