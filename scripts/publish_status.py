@@ -69,6 +69,7 @@ def band_view(band) -> dict[str, float]:
 
 def build_status(baseline_path: Path, candidate_path: Path, config_path: Path, scenario_name: str) -> dict:
     """Computes the status payload. Never raises — errors land in the payload."""
+    import agentdiff
     from agentdiff.config import load_config
     from agentdiff.engine.comparator import compare_envelope
     from agentdiff.governance import provenance_line
@@ -76,6 +77,7 @@ def build_status(baseline_path: Path, candidate_path: Path, config_path: Path, s
 
     status: dict = {
         "schema_version": SCHEMA_VERSION,
+        "package_version": getattr(agentdiff, "__version__", None),
         "kind": KIND,
         "generated_at": now_iso(),
         "scenario": scenario_name,
@@ -179,6 +181,7 @@ def history_entry(status: dict) -> dict:
     candidate = status.get("candidate", {})
     return {
         "at": status.get("generated_at"),
+        "engine": status.get("package_version"),
         "passed": (status.get("verdict") or {}).get("passed"),
         "status": (status.get("verdict") or {}).get("status"),
         "tdi": metrics.get("trajectory_divergence_index"),
