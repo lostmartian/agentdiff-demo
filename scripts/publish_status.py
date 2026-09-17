@@ -179,9 +179,12 @@ def build_status(baseline_path: Path, candidate_path: Path, config_path: Path, s
 def history_entry(status: dict) -> dict:
     metrics = status.get("metrics", {})
     candidate = status.get("candidate", {})
+    findings = status.get("findings") or []
     return {
         "at": status.get("generated_at"),
         "engine": status.get("package_version"),
+        "headline": (status.get("verdict") or {}).get("headline"),
+        "codes": [f.get("code") for f in findings],
         "passed": (status.get("verdict") or {}).get("passed"),
         "status": (status.get("verdict") or {}).get("status"),
         "tdi": metrics.get("trajectory_divergence_index"),
