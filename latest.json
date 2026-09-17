@@ -37,10 +37,10 @@
   },
   "candidate": {
     "agent_name": "gemini_support_agent",
-    "estimated_cost_usd": 0.00156,
+    "estimated_cost_usd": 0.002055,
     "latency_ms": 0.0,
-    "steps": 4,
-    "total_tokens": 520,
+    "steps": 5,
+    "total_tokens": 685,
     "trace_id": "run"
   },
   "context": {
@@ -48,43 +48,27 @@
     "commit": "f13a842f5406",
     "event": "workflow_dispatch",
     "repository": "lostmartian/agentdiff-demo",
-    "run_id": "35196539042",
-    "run_url": "https://github.com/lostmartian/agentdiff-demo/actions/runs/35196539042",
+    "run_id": "35196684768",
+    "run_url": "https://github.com/lostmartian/agentdiff-demo/actions/runs/35196684768",
     "workflow": "AgentDiff Check"
   },
-  "findings": [
-    {
-      "code": "step_count_band",
-      "message": "Step count 4 is outside the envelope band (mean 5.0 ± 2 sigma = 0.0); drift -1.0 steps.",
-      "severity": "hard"
-    },
-    {
-      "code": "loops",
-      "message": "Detected 1 loop(s) in the candidate run, but the loop gate allows at most 0.",
-      "severity": "hard"
-    },
-    {
-      "code": "tool_loop",
-      "message": "Cyclical tool loop: 'get_user_database_stats' called 2 times with identical inputs and stagnant output state.",
-      "severity": "hard"
-    }
-  ],
-  "gate_exit_code": 1,
-  "generated_at": "2026-09-17T07:50:50+00:00",
+  "findings": [],
+  "gate_exit_code": 0,
+  "generated_at": "2026-09-17T07:52:22+00:00",
   "kind": "agentdiff_gate_status",
   "metrics": {
-    "cost_delta_pct": -34.09,
-    "identical_call_loops": 1,
+    "cost_delta_pct": -13.18,
+    "identical_call_loops": 0,
     "latency_delta_pct": 0.0,
-    "loops_detected": 1,
+    "loops_detected": 0,
     "recovery_step_ratio": 0.0,
-    "token_delta_pct": -34.09,
+    "token_delta_pct": -13.18,
     "tool_call_counts": {
       "gemini_synthesis": 1,
       "gemini_tool_decision": 1,
-      "get_user_database_stats": 2
+      "get_user_database_stats": 3
     },
-    "trajectory_divergence_index": 0.1111,
+    "trajectory_divergence_index": 0.0,
     "wasted_effort": {
       "baseline": 0.0,
       "candidate": 0.0
@@ -101,8 +85,8 @@
     "step_count_std_dev": 2.0
   },
   "verdict": {
-    "headline": "Blocked by: step_count_band, loops, tool_loop",
-    "passed": false,
-    "status": "BLOCKED"
+    "headline": "No loops. Cost within band. Trajectory within budget.",
+    "passed": true,
+    "status": "PASSED"
   }
 }
