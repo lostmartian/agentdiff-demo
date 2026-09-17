@@ -23,7 +23,8 @@ import sys
 from google import genai
 from google.genai import types
 
-COST_PER_TOKEN = 0.000000075
+# Blended frontier-model rate ($3 / 1M tokens) so cost deltas are meaningful
+COST_PER_TOKEN = 0.000003
 
 
 def get_user_database_stats(state: str) -> str:

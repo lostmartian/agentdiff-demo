@@ -30,7 +30,8 @@ jobs:
       - name: Record N live runs into a statistical envelope
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python scripts/make_envelope.py --runs ${{ github.event.inputs.runs || '3' }}
+          PROMPT: "Compare active users and revenue for states NY, CA and TX, then summarize which state leads."
+        run: python scripts/make_envelope.py --prompt "$PROMPT" --runs ${{ github.event.inputs.runs || '3' }}
 
       - name: Commit the envelope
         run: |

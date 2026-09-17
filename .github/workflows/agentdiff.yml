@@ -54,7 +54,7 @@ jobs:
           PROMPT: ${{ inputs.prompt }}
         run: |
           if [ -z "$PROMPT" ]; then
-            PROMPT="Retrieve the database count of active users for state NY."
+            PROMPT="Compare active users and revenue for states NY, CA and TX, then summarize which state leads."
           fi
           python scripts/run_agent.py --prompt "$PROMPT" --out traces/candidate.json
 
@@ -69,6 +69,14 @@ jobs:
       - name: Gate against baseline envelope
         if: steps.base.outputs.has_baseline == 'true'
         run: agentdiff diff baselines/default.envelope.json traces/candidate.json --scenario default --fail-on-regression
+
+      - name: Fetch existing status history
+        if: always() && github.event_name != 'pull_request'
+        run: |
+          mkdir -p status
+          git fetch -q --depth=1 origin status 2>/dev/null || true
+          git show FETCH_HEAD:history.json > status/history.json 2>/dev/null || true
+          git show FETCH_HEAD:latest.json > /dev/null 2>&1 && echo "seeded history from status branch" || echo "no prior history"
 
       - name: Publish gate status (always)
         if: always()
